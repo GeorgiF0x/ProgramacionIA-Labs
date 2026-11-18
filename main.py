@@ -9,7 +9,7 @@ import matplotlib
 # src/graficos.py para que el cuaderno pueda seguir mostrando gráficos en línea.
 matplotlib.use("Agg")
 
-from src import analisis, carga, clasificador, graficos, limpieza, preparacion  # noqa: E402
+from src import analisis, carga, clasificador, evaluacion, graficos, limpieza, preparacion  # noqa: E402
 
 RAIZ = Path(__file__).parent
 RUTA_DATOS = RAIZ / "datos" / "sensores.csv"
@@ -44,7 +44,11 @@ def main() -> int:
     particion, transformacion, X_entrenamiento, X_prueba = preparar(resultado_limpieza.datos)
 
     titulo("APARTADO 5. Clasificador de centroide más cercano")
-    clasificar(particion, transformacion, X_entrenamiento, X_prueba, resultado_limpieza.datos.variables)
+    _, predicciones, _ = clasificar(particion, transformacion, X_entrenamiento, X_prueba,
+                                    resultado_limpieza.datos.variables)
+
+    titulo("APARTADO 6. Evaluación del clasificador")
+    evaluar(particion, predicciones)
     return 0
 
 
@@ -97,6 +101,29 @@ def clasificar(particion, transformacion, X_entrenamiento, X_prueba, variables) 
     print(f"\nPredicciones guardadas en {ruta.relative_to(RAIZ)}")
     print(f"Gráfico guardado en {ruta_grafico.relative_to(RAIZ)}")
     return modelo, predicciones, distancias
+
+
+def evaluar(particion, predicciones) -> evaluacion.Metricas:
+    metricas = evaluacion.calcular_metricas(particion.y_prueba, predicciones)
+    evaluacion.mostrar_metricas(metricas)
+
+    print()
+    cv = {
+        "4 variables (modelo final)": evaluacion.validacion_cruzada(particion.X_entrenamiento,
+                                                                    particion.y_entrenamiento),
+        "sin presión": evaluacion.validacion_cruzada(particion.X_entrenamiento, particion.y_entrenamiento,
+                                                     columnas=[0, 1, 2]),
+        "solo temperatura y vibración": evaluacion.validacion_cruzada(particion.X_entrenamiento,
+                                                                      particion.y_entrenamiento, columnas=[0, 1]),
+    }
+    evaluacion.mostrar_validacion_cruzada(cv, metricas.accuracy)
+
+    print("\nRespuestas a las preguntas del enunciado:")
+    evaluacion.responder_preguntas(metricas)
+
+    ruta = graficos.matriz_confusion(metricas.matriz, metricas.clases, RUTA_GRAFICOS)
+    print(f"\nGráfico guardado en {ruta.relative_to(RAIZ)}")
+    return metricas
 
 
 if __name__ == "__main__":

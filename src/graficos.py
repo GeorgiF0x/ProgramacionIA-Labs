@@ -174,3 +174,30 @@ def centroides(X_entrenamiento, y_entrenamiento, centroides_originales, clases, 
     eje.set_title("Centroides aprendidos: cada punto nuevo se asigna al más cercano", loc="left", fontsize=12)
     eje.legend(loc="upper left", markerscale=1.2)
     return _guardar(figura, carpeta, "05_centroides.png")
+
+
+@plt.rc_context(ESTILO)
+def matriz_confusion(matriz: np.ndarray, clases, carpeta: Path) -> Path:
+    """Matriz de confusión con una sola escala de azul (más oscuro = más casos) y el recuento en cada celda."""
+    mapa = LinearSegmentedColormap.from_list("azul", ESCALA_AZUL)
+    figura, eje = plt.subplots(figsize=(7.2, 5.6))
+    imagen = eje.imshow(matriz, cmap=mapa, vmin=0, vmax=matriz.max())
+    nombres = [ESTADOS[c].replace(" ", "\n") for c in clases]
+    eje.set_xticks(range(len(clases)), nombres)
+    eje.set_yticks(range(len(clases)), nombres)
+    eje.set_xlabel("Estado predicho")
+    eje.set_ylabel("Estado real")
+    eje.grid(visible=False)
+    eje.tick_params(length=0)
+    for spine in eje.spines.values():
+        spine.set_visible(False)
+    totales = matriz.sum(axis=1)
+    for (i, j), valor in np.ndenumerate(matriz):
+        oscuro = valor > 0.55 * matriz.max()
+        eje.text(j, i, f"{valor}\n{valor / totales[i]:.0%}", ha="center", va="center", fontsize=11,
+                 color="#ffffff" if oscuro else TINTA, fontweight="bold" if i == j else "normal")
+    barra = figura.colorbar(imagen, ax=eje, fraction=0.046, pad=0.04)
+    barra.set_label("Registros de prueba")
+    barra.outline.set_visible(False)
+    eje.set_title("Matriz de confusión · 150 registros de prueba (% sobre cada fila)", loc="left", fontsize=12)
+    return _guardar(figura, carpeta, "06_matriz_confusion.png")
