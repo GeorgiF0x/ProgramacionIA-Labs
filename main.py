@@ -9,11 +9,12 @@ import matplotlib
 # src/graficos.py para que el cuaderno pueda seguir mostrando gráficos en línea.
 matplotlib.use("Agg")
 
-from src import analisis, carga, graficos, limpieza, preparacion  # noqa: E402
+from src import analisis, carga, clasificador, graficos, limpieza, preparacion  # noqa: E402
 
 RAIZ = Path(__file__).parent
 RUTA_DATOS = RAIZ / "datos" / "sensores.csv"
 RUTA_GRAFICOS = RAIZ / "resultados" / "graficos"
+RUTA_PREDICCIONES = RAIZ / "resultados" / "predicciones.csv"
 
 
 def titulo(texto: str) -> None:
@@ -40,7 +41,10 @@ def main() -> int:
     analizar(resultado_limpieza.datos)
 
     titulo("APARTADO 4. Transformación y normalización")
-    preparar(resultado_limpieza.datos)
+    particion, transformacion, X_entrenamiento, X_prueba = preparar(resultado_limpieza.datos)
+
+    titulo("APARTADO 5. Clasificador de centroide más cercano")
+    clasificar(particion, transformacion, X_entrenamiento, X_prueba, resultado_limpieza.datos.variables)
     return 0
 
 
@@ -74,7 +78,25 @@ def preparar(datos: carga.ConjuntoDatos) -> tuple:
     X_prueba = preparacion.transformar(particion.X_prueba, transformacion)
     preparacion.mostrar_resumen_preparacion(particion, transformacion, X_entrenamiento, X_prueba,
                                             datos.variables)
-    return particion, X_entrenamiento, X_prueba
+    return particion, transformacion, X_entrenamiento, X_prueba
+
+
+def clasificar(particion, transformacion, X_entrenamiento, X_prueba, variables) -> tuple:
+    modelo = clasificador.entrenar(X_entrenamiento, particion.y_entrenamiento)
+    clasificador.mostrar_modelo(modelo, variables, transformacion.media, transformacion.desviacion)
+
+    predicciones, distancias = clasificador.predecir(modelo, X_prueba)
+    print()
+    clasificador.mostrar_predicciones(particion.ids_prueba, particion.y_prueba, predicciones, distancias,
+                                      modelo.clases)
+    ruta = clasificador.guardar_predicciones(RUTA_PREDICCIONES, particion.ids_prueba, particion.y_prueba,
+                                             predicciones, distancias, modelo.clases)
+    ruta_grafico = graficos.centroides(particion.X_entrenamiento, particion.y_entrenamiento,
+                                       modelo.centroides * transformacion.desviacion + transformacion.media,
+                                       modelo.clases, carga.NOMBRES_LEGIBLES, carga.UNIDADES, RUTA_GRAFICOS)
+    print(f"\nPredicciones guardadas en {ruta.relative_to(RAIZ)}")
+    print(f"Gráfico guardado en {ruta_grafico.relative_to(RAIZ)}")
+    return modelo, predicciones, distancias
 
 
 if __name__ == "__main__":

@@ -147,3 +147,30 @@ def mapa_calor_cohen(d: np.ndarray, parejas: list, nombres, carpeta: Path, umbra
     barra.outline.set_visible(False)
     eje.set_title(f"Separación entre cada pareja de estados (d > {umbral} = grande)", loc="left", fontsize=12)
     return _guardar(figura, carpeta, "04_mapa_calor_cohen.png")
+
+
+@plt.rc_context(ESTILO)
+def centroides(X_entrenamiento, y_entrenamiento, centroides_originales, clases, nombres, unidades,
+               carpeta: Path, x: int = 0, y: int = 1) -> Path:
+    """Puntos de entrenamiento (atenuados) y el centroide de cada clase, en unidades originales.
+
+    Solo se ven 2 de las 4 variables: el modelo decide en 4 dimensiones, así que algún
+    punto puede parecer más cerca de otro centroide en este plano.
+    """
+    validos = ~np.isnan(X_entrenamiento[:, [x, y]]).any(axis=1)
+    figura, eje = plt.subplots(figsize=(9, 6.5))
+    for c in clases:
+        filas = validos & (y_entrenamiento == c)
+        eje.scatter(X_entrenamiento[filas, x], X_entrenamiento[filas, y], s=20, color=COLORES_ESTADO[c],
+                    alpha=0.3, edgecolors="none", label=f"{ESTADOS[c]} (entrenamiento)")
+    for c, centroide in zip(clases, centroides_originales):
+        eje.scatter(centroide[x], centroide[y], s=260, marker="X", color=COLORES_ESTADO[c],
+                    edgecolors=TINTA, linewidths=1.2, zorder=3)
+        eje.annotate(f"Centroide\n{ESTADOS[c]}", (centroide[x], centroide[y]), xytext=(12, 10),
+                     textcoords="offset points", fontsize=9, color=TINTA, fontweight="bold",
+                     bbox=dict(boxstyle="round,pad=0.3", facecolor=SUPERFICIE, edgecolor=COLORES_ESTADO[c]))
+    eje.set_xlabel(f"{nombres[x]} ({unidades[x]})")
+    eje.set_ylabel(f"{nombres[y]} ({unidades[y]})")
+    eje.set_title("Centroides aprendidos: cada punto nuevo se asigna al más cercano", loc="left", fontsize=12)
+    eje.legend(loc="upper left", markerscale=1.2)
+    return _guardar(figura, carpeta, "05_centroides.png")
