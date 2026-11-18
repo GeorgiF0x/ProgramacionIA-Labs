@@ -1,0 +1,4 @@
+# Opcional: solo para abrir practica_sensores.ipynb (main.py no lo necesita)
+-r requirements.txt
+ipykernel==7.4.0
+notebook==7.6.5
