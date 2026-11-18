@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-from src import carga
+from src import carga, limpieza
 
 RUTA_DATOS = Path(__file__).parent / "datos" / "sensores.csv"
 
@@ -23,6 +23,10 @@ def main() -> int:
     carga.mostrar_resumen(carga.resumen_exploratorio(datos))
     print("\nMuestra de registros:")
     carga.mostrar_muestra(datos)
+
+    titulo("APARTADO 2. Limpieza y preparación de los datos")
+    resultado_limpieza = limpieza.limpiar(datos)
+    limpieza.mostrar_resumen_limpieza(datos, resultado_limpieza)
     return 0
 
 
