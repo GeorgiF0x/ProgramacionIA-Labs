@@ -3,8 +3,8 @@
 Criterio general:
 - Valor fuera del rango físico del sensor -> error de medición -> se marca como ausente.
 - Valor atípico dentro del rango -> posible anomalía real -> se conserva y se informa.
-- Valores ausentes -> se imputan con la mediana del conjunto de ENTRENAMIENTO (apartado 4),
-  nunca antes de dividir, para que el conjunto de prueba no influya en el entrenamiento.
+- Valores ausentes -> se dejan como np.nan; se imputan en src/preparacion.py (apartado 4)
+  con la mediana del ENTRENAMIENTO, para que el conjunto de prueba no influya.
 """
 
 from typing import NamedTuple
@@ -85,16 +85,6 @@ def limpiar(datos: ConjuntoDatos) -> ResultadoLimpieza:
     return ResultadoLimpieza(
         datos_limpios, ausentes, fuera_de_rango, atipicos_globales, atipicos_por_clase, descartados
     )
-
-
-def calcular_medianas(mediciones_entrenamiento: np.ndarray) -> np.ndarray:
-    """Mediana por variable. Se usa la mediana y no la media porque los atípicos no la desplazan."""
-    return np.nanmedian(mediciones_entrenamiento, axis=0)
-
-
-def imputar(mediciones: np.ndarray, medianas: np.ndarray) -> np.ndarray:
-    """Sustituye cada np.nan por la mediana de su columna (broadcasting (n, 4) con (4,))."""
-    return np.where(np.isnan(mediciones), medianas, mediciones)
 
 
 def mostrar_resumen_limpieza(original: ConjuntoDatos, resultado: ResultadoLimpieza) -> None:
