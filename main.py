@@ -3,9 +3,17 @@
 import sys
 from pathlib import Path
 
-from src import carga, limpieza
+import matplotlib
 
-RUTA_DATOS = Path(__file__).parent / "datos" / "sensores.csv"
+# main.py solo guarda los gráficos en disco: backend sin ventanas. Se fija aquí y no en
+# src/graficos.py para que el cuaderno pueda seguir mostrando gráficos en línea.
+matplotlib.use("Agg")
+
+from src import analisis, carga, graficos, limpieza  # noqa: E402
+
+RAIZ = Path(__file__).parent
+RUTA_DATOS = RAIZ / "datos" / "sensores.csv"
+RUTA_GRAFICOS = RAIZ / "resultados" / "graficos"
 
 
 def titulo(texto: str) -> None:
@@ -27,7 +35,33 @@ def main() -> int:
     titulo("APARTADO 2. Limpieza y preparación de los datos")
     resultado_limpieza = limpieza.limpiar(datos)
     limpieza.mostrar_resumen_limpieza(datos, resultado_limpieza)
+
+    titulo("APARTADO 3. Análisis estadístico")
+    analizar(resultado_limpieza.datos)
     return 0
+
+
+def analizar(datos: carga.ConjuntoDatos) -> None:
+    X, y, variables = datos.mediciones, datos.estados, datos.variables
+    print("Estadísticos globales (valores medidos, sin imputar):")
+    analisis.mostrar_estadisticos(analisis.calcular_estadisticos(X), variables)
+
+    print("\nComparativa por estado:")
+    analisis.mostrar_comparativa_por_clase(*analisis.estadisticos_por_clase(X, y), variables)
+
+    print("\nCapacidad de cada variable para distinguir los estados:")
+    parejas, d = analisis.d_cohen_por_pareja(X, y)
+    analisis.mostrar_separabilidad(analisis.ratio_f(X, y), parejas, d, variables)
+
+    rutas = [
+        graficos.boxplots_por_clase(X, y, carga.NOMBRES_LEGIBLES, carga.UNIDADES, RUTA_GRAFICOS),
+        graficos.dispersion(X, y, carga.NOMBRES_LEGIBLES, carga.UNIDADES, RUTA_GRAFICOS),
+        graficos.histogramas_por_clase(X, y, carga.NOMBRES_LEGIBLES, carga.UNIDADES, RUTA_GRAFICOS),
+        graficos.mapa_calor_cohen(d, parejas, carga.NOMBRES_LEGIBLES, RUTA_GRAFICOS),
+    ]
+    print("\nGráficos guardados:")
+    for ruta in rutas:
+        print(f"  {ruta.relative_to(RAIZ)}")
 
 
 if __name__ == "__main__":
