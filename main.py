@@ -9,7 +9,7 @@ import matplotlib
 # src/graficos.py para que el cuaderno pueda seguir mostrando gráficos en línea.
 matplotlib.use("Agg")
 
-from src import analisis, carga, graficos, limpieza  # noqa: E402
+from src import analisis, carga, graficos, limpieza, preparacion  # noqa: E402
 
 RAIZ = Path(__file__).parent
 RUTA_DATOS = RAIZ / "datos" / "sensores.csv"
@@ -38,6 +38,9 @@ def main() -> int:
 
     titulo("APARTADO 3. Análisis estadístico")
     analizar(resultado_limpieza.datos)
+
+    titulo("APARTADO 4. Transformación y normalización")
+    preparar(resultado_limpieza.datos)
     return 0
 
 
@@ -62,6 +65,16 @@ def analizar(datos: carga.ConjuntoDatos) -> None:
     print("\nGráficos guardados:")
     for ruta in rutas:
         print(f"  {ruta.relative_to(RAIZ)}")
+
+
+def preparar(datos: carga.ConjuntoDatos) -> tuple:
+    particion = preparacion.dividir_estratificado(datos)
+    transformacion = preparacion.ajustar_transformacion(particion.X_entrenamiento)
+    X_entrenamiento = preparacion.transformar(particion.X_entrenamiento, transformacion)
+    X_prueba = preparacion.transformar(particion.X_prueba, transformacion)
+    preparacion.mostrar_resumen_preparacion(particion, transformacion, X_entrenamiento, X_prueba,
+                                            datos.variables)
+    return particion, X_entrenamiento, X_prueba
 
 
 if __name__ == "__main__":
