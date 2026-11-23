@@ -26,7 +26,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 GRAFICOS = RAIZ / "resultados" / "graficos"
 SALIDA = RAIZ / "memoria.pdf"
 
-ALUMNO = "[Nombre y apellidos]"
+ALUMNO = "Georgi Borisov Aleksandrov"
 ENLACE_VIDEO = ""  # pegar aquí la URL del vídeo cuando esté grabado
 REPOSITORIO = "https://github.com/GeorgiF0x/ProgramacionIA-Labs"
 
