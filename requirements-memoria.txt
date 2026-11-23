@@ -1,0 +1,5 @@
+# Opcional: solo para regenerar memoria.pdf (main.py no lo necesita)
+-r requirements.txt
+charset-normalizer==3.5.2
+pillow==13.0.0
+reportlab==5.1.0
