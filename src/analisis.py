@@ -20,7 +20,7 @@ DDOF = 1
 EFECTO_GRANDE = 0.8
 
 
-def calcular_estadisticos(mediciones: np.ndarray) -> np.ndarray:
+def calcular_estadisticos(mediciones: np.ndarray) -> np.ndarray:  # [enunciado] A3: las 8 medidas de cada variable
     """Matriz (8, n_variables): una fila por estadístico, en el orden de ESTADISTICOS."""
     q1, mediana, q3 = np.nanpercentile(mediciones, [25, 50, 75], axis=0)
     return np.vstack([
@@ -35,8 +35,8 @@ def calcular_estadisticos(mediciones: np.ndarray) -> np.ndarray:
     ])
 
 
-def estadisticos_por_clase(mediciones: np.ndarray, estados: np.ndarray) -> tuple:
-    """Devuelve (clases, array (n_clases, 8, n_variables))."""
+def estadisticos_por_clase(mediciones: np.ndarray, estados: np.ndarray) -> tuple:  # [enunciado] A3: comparativa por categoría
+    """Devuelve (clases, array (n_clases 3, 8, n_variables 4))."""
     clases = np.unique(estados)
     return clases, np.stack([calcular_estadisticos(mediciones[estados == c]) for c in clases])
 
@@ -51,7 +51,7 @@ def _momentos_por_clase(mediciones: np.ndarray, estados: np.ndarray) -> tuple:
     return clases, n, medias, varianzas
 
 
-def ratio_f(mediciones: np.ndarray, estados: np.ndarray) -> np.ndarray:
+def ratio_f(mediciones: np.ndarray, estados: np.ndarray) -> np.ndarray:  # [enunciado] A3: qué separa los estados
     """Estadístico F (ANOVA de un factor) por variable.
 
     F = varianza ENTRE clases / varianza DENTRO de las clases.
@@ -65,7 +65,7 @@ def ratio_f(mediciones: np.ndarray, estados: np.ndarray) -> np.ndarray:
     return entre / dentro
 
 
-def d_cohen_por_pareja(mediciones: np.ndarray, estados: np.ndarray) -> tuple:
+def d_cohen_por_pareja(mediciones: np.ndarray, estados: np.ndarray) -> tuple:  # [enunciado] A3: qué separa los estados
     """d de Cohen de cada pareja de clases: |media_a - media_b| / desviación conjunta.
 
     Devuelve (lista de parejas, array (n_parejas, n_variables)).

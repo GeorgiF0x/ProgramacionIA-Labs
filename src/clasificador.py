@@ -17,7 +17,7 @@ class ModeloCentroides(NamedTuple):
     centroides: np.ndarray  # (k, n_variables) un punto medio por clase
 
 
-def entrenar(X: np.ndarray, y: np.ndarray) -> ModeloCentroides:
+def entrenar(X: np.ndarray, y: np.ndarray) -> ModeloCentroides:  # [enunciado] A5.1: centroide de cada categoría
     """Centroide de cada clase = media de sus observaciones de entrenamiento.
 
     Se calcula sin bucles con una matriz de pertenencia (one-hot):
@@ -32,7 +32,7 @@ def entrenar(X: np.ndarray, y: np.ndarray) -> ModeloCentroides:
     return ModeloCentroides(clases, sumas / tamanos)
 
 
-def calcular_distancias(X: np.ndarray, centroides: np.ndarray) -> np.ndarray:
+def calcular_distancias(X: np.ndarray, centroides: np.ndarray) -> np.ndarray:  # [enunciado] A5.2: distancia euclídea
     """Distancia euclídea de cada observación a cada centroide: matriz (n, k).
 
     Broadcasting en 3D: (n, 1, v) - (1, k, v) -> (n, k, v) contiene todas las
@@ -43,7 +43,7 @@ def calcular_distancias(X: np.ndarray, centroides: np.ndarray) -> np.ndarray:
     return np.sqrt((diferencias ** 2).sum(axis=2))
 
 
-def predecir(modelo: ModeloCentroides, X: np.ndarray) -> tuple:
+def predecir(modelo: ModeloCentroides, X: np.ndarray) -> tuple:  # [enunciado] A5.3: asignar el centroide más cercano
     """Devuelve (predicciones (n,), distancias (n, k)).
 
     argmin da la POSICIÓN del centroide más cercano; modelo.clases la traduce
@@ -53,7 +53,7 @@ def predecir(modelo: ModeloCentroides, X: np.ndarray) -> tuple:
     return modelo.clases[np.argmin(distancias, axis=1)], distancias
 
 
-def guardar_predicciones(ruta: Path, ids, y_real, y_predicho, distancias, clases) -> Path:
+def guardar_predicciones(ruta: Path, ids, y_real, y_predicho, distancias, clases) -> Path:  # [enunciado] A5.4: almacenar
     """Almacena las predicciones en CSV: id, estado real, estado predicho y distancia a cada centroide."""
     ruta.parent.mkdir(parents=True, exist_ok=True)
     cabecera = ["id", "estado_real", "estado_predicho"] + [f"distancia_estado_{c}" for c in clases]
