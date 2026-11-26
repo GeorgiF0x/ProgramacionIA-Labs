@@ -29,7 +29,7 @@ def _leer_cabecera(ruta: Path) -> tuple:
     return cabecera, hay_registros
 
 
-def cargar_datos(ruta) -> ConjuntoDatos:
+def cargar_datos(ruta) -> ConjuntoDatos:  # [enunciado] A1: cargar el CSV con NumPy y comprobar que se ha cargado bien
     """Carga el CSV y valida su estructura antes de devolver los arrays.
 
     Lanza FileNotFoundError si el fichero no existe y ValueError si su
@@ -47,7 +47,6 @@ def cargar_datos(ruta) -> ConjuntoDatos:
 
     # genfromtxt convierte las celdas vacías en np.nan cuando el tipo es float,
     # así los ausentes quedan marcados sin tener que recorrer fila a fila.
-    # ndmin garantiza la forma (n,) o (n, 4) aunque el fichero tenga una sola fila.
     opciones = dict(delimiter=",", skip_header=1, encoding="utf-8")
     ids = np.genfromtxt(ruta, usecols=0, dtype=str, ndmin=1, **opciones)
     mediciones = np.genfromtxt(ruta, usecols=range(1, 5), dtype=float, ndmin=2, **opciones)
@@ -63,7 +62,7 @@ def cargar_datos(ruta) -> ConjuntoDatos:
     return ConjuntoDatos(ids, mediciones, estados_crudos.astype(int), VARIABLES)
 
 
-def resumen_exploratorio(datos: ConjuntoDatos) -> dict:
+def resumen_exploratorio(datos: ConjuntoDatos) -> dict:  # [enunciado] A1: exploración de los datos
     """Calcula la información del apartado 1 sin imprimir nada."""
     ausentes = np.isnan(datos.mediciones)
     clases, recuento = np.unique(datos.estados, return_counts=True)
@@ -78,7 +77,7 @@ def resumen_exploratorio(datos: ConjuntoDatos) -> dict:
     }
 
 
-def mostrar_muestra(datos: ConjuntoDatos, n: int = 5) -> None:
+def mostrar_muestra(datos: ConjuntoDatos, n: int = 5) -> None:  # [enunciado] A1: mostrar una muestra de los registros
     print(f"{'id':<7}" + "".join(f"{v:>13}" for v in datos.variables) + f"{'estado':>9}")
     for i in range(min(n, len(datos.ids))):
         valores = "".join(f"{x:>13.3f}" for x in datos.mediciones[i])

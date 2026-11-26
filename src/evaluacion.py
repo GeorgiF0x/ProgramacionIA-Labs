@@ -22,7 +22,7 @@ class Metricas(NamedTuple):
     f1: np.ndarray         # (k,) por clase
 
 
-def matriz_confusion(y_real: np.ndarray, y_predicho: np.ndarray, clases: np.ndarray) -> np.ndarray:
+def matriz_confusion(y_real: np.ndarray, y_predicho: np.ndarray, clases: np.ndarray) -> np.ndarray:  # [enunciado] A6: matriz
     """Cuenta cada pareja (real, predicho) sin bucles.
 
     Cada pareja se convierte en un número de celda único: fila * k + columna.
@@ -44,7 +44,7 @@ def _dividir(numerador: np.ndarray, denominador: np.ndarray, metrica: str) -> np
     return np.divide(numerador, denominador, out=np.zeros(np.shape(numerador)), where=denominador != 0)
 
 
-def calcular_metricas(y_real: np.ndarray, y_predicho: np.ndarray, clases=None) -> Metricas:
+def calcular_metricas(y_real: np.ndarray, y_predicho: np.ndarray, clases=None) -> Metricas:  # [enunciado] A6: métricas a mano
     clases = np.unique(np.concatenate([y_real, y_predicho])) if clases is None else np.asarray(clases)
     matriz = matriz_confusion(y_real, y_predicho, clases)
     verdaderos_positivos = np.diag(matriz)
@@ -80,17 +80,17 @@ def validacion_cruzada(X: np.ndarray, y: np.ndarray, n_pliegues: int = 5, column
     pliegue = np.empty(len(y), dtype=int)
     for estado in np.unique(y):  # reparto estratificado: cada clase se reparte entre los pliegues
         indices = generador.permutation(np.flatnonzero(y == estado))
-        pliegue[indices] = np.arange(indices.size) % n_pliegues
+        pliegue[indices] = np.arange(indices.size) % n_pliegues  # reparto circular: 0, 1, 2, 3, 4, 0, 1...
 
     resultados = np.empty(n_pliegues)
     for k in range(n_pliegues):  # 5 iteraciones, una por pliegue
-        entrena, evalua = pliegue != k, pliegue == k
-        transformacion = preparacion.ajustar_transformacion(X[entrena])
+        entrena, evalua = pliegue != k, pliegue == k  # 4 pliegues entrenan, 1 evalúa
+        transformacion = preparacion.ajustar_transformacion(X[entrena])  # sin fuga: solo con los 4 de entrenamiento
         X_entrena = preparacion.transformar(X[entrena], transformacion)[:, columnas]
         X_evalua = preparacion.transformar(X[evalua], transformacion)[:, columnas]
         modelo = clasificador.entrenar(X_entrena, y[entrena])
         predicciones, _ = clasificador.predecir(modelo, X_evalua)
-        resultados[k] = (predicciones == y[evalua]).mean()
+        resultados[k] = (predicciones == y[evalua]).mean()  # accuracy de este pliegue
     return resultados
 
 
@@ -124,14 +124,14 @@ def mostrar_validacion_cruzada(resultados: dict, accuracy_prueba: float) -> None
           " del rango habitual de la validación cruzada (media ± 2 desviaciones)")
 
 
-def responder_preguntas(metricas: Metricas) -> None:
+def responder_preguntas(metricas: Metricas) -> None:  # [enunciado] A6: las 4 preguntas
     """Respuestas del enunciado calculadas a partir de las métricas, no escritas a mano."""
     nombre = {c: ESTADOS[c] for c in metricas.clases}
     clases = metricas.clases
-    mejor = int(np.argmax(metricas.f1))
-    peor = int(np.argmin(metricas.recall))
-    fuera_diagonal = metricas.matriz * (1 - np.eye(len(clases), dtype=int))
-    real, predicho = np.unravel_index(np.argmax(fuera_diagonal), fuera_diagonal.shape)
+    mejor = int(np.argmax(metricas.f1))  # pregunta 1: mayor F1
+    peor = int(np.argmin(metricas.recall))  # pregunta 3: menor recall, la que más casos deja escapar
+    fuera_diagonal = metricas.matriz * (1 - np.eye(len(clases), dtype=int))  # solo errores: diagonal a 0
+    real, predicho = np.unravel_index(np.argmax(fuera_diagonal), fuera_diagonal.shape)  # pregunta 2: mayor error
     parejas = confusiones_por_pareja(metricas.matriz)
 
     print(f"1. Mejores resultados: {nombre[clases[mejor]]} (F1 = {metricas.f1[mejor]:.3f}, "
@@ -145,7 +145,7 @@ def responder_preguntas(metricas: Metricas) -> None:
 
     normal = int(np.flatnonzero(clases == 0)[0]) if 0 in clases else None
     if normal is not None:
-        averias = metricas.matriz[:, normal].sum() - metricas.matriz[normal, normal]
+        averias = metricas.matriz[:, normal].sum() - metricas.matriz[normal, normal]  # pregunta 4: averías dadas por normales
         reales = metricas.matriz.sum() - metricas.matriz[normal].sum()
         detalle = "; ".join(f"{nombre[c]}: {metricas.matriz[i, normal]} de {metricas.matriz[i].sum()}"
                             for i, c in enumerate(clases) if i != normal)

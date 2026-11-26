@@ -33,7 +33,7 @@ class ResultadoLimpieza(NamedTuple):
     descartados: np.ndarray         # (n,) bool: fila eliminada
 
 
-def detectar_fuera_de_rango(mediciones: np.ndarray, rangos: np.ndarray = RANGOS_ADMISIBLES) -> np.ndarray:
+def detectar_fuera_de_rango(mediciones: np.ndarray, rangos: np.ndarray = RANGOS_ADMISIBLES) -> np.ndarray:  # [enunciado] A2
     # Broadcasting: (n, 4) se compara con (4,), cada columna con su propio límite.
     # Cualquier comparación con np.nan es False, así que un ausente no cuenta como error.
     return (mediciones < rangos[:, 0]) | (mediciones > rangos[:, 1])
@@ -46,7 +46,7 @@ def limites_iqr(mediciones: np.ndarray, factor: float = FACTOR_IQR) -> tuple:
     return q1 - factor * iqr, q3 + factor * iqr
 
 
-def detectar_atipicos(mediciones: np.ndarray) -> np.ndarray:
+def detectar_atipicos(mediciones: np.ndarray) -> np.ndarray:  # [enunciado] A2: identificar atípicos (Tukey)
     inferior, superior = limites_iqr(mediciones)
     return (mediciones < inferior) | (mediciones > superior)
 
@@ -64,7 +64,7 @@ def detectar_atipicos_por_clase(mediciones: np.ndarray, estados: np.ndarray) -> 
     return atipicos
 
 
-def limpiar(datos: ConjuntoDatos) -> ResultadoLimpieza:
+def limpiar(datos: ConjuntoDatos) -> ResultadoLimpieza:  # [enunciado] A2: separar válidos, corregidos y descartados
     mediciones = datos.mediciones
     ausentes = np.isnan(mediciones)
     fuera_de_rango = detectar_fuera_de_rango(mediciones)

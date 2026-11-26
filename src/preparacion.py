@@ -37,7 +37,7 @@ class Transformacion(NamedTuple):
     desviacion: np.ndarray   # (4,) para escalar
 
 
-def dividir_estratificado(datos: ConjuntoDatos, proporcion: float = PROPORCION_ENTRENAMIENTO,
+def dividir_estratificado(datos: ConjuntoDatos, proporcion: float = PROPORCION_ENTRENAMIENTO,  # [enunciado] A4: 80/20
                           semilla: int = SEMILLA) -> Particion:
     """Reparte cada clase por separado para que ambas partes mantengan la proporción de clases."""
     generador = np.random.default_rng(semilla)
@@ -51,7 +51,7 @@ def dividir_estratificado(datos: ConjuntoDatos, proporcion: float = PROPORCION_E
     # Se baraja también el orden final para que las clases no queden en bloques.
     i_ent = generador.permutation(np.concatenate(entrenamiento))
     i_pru = generador.permutation(np.concatenate(prueba))
-    X, y, ids = datos.mediciones, datos.estados, datos.ids
+    X, y, ids = datos.mediciones, datos.estados, datos.ids  # [enunciado] A4: predictoras (X) y objetivo (y)
     return Particion(ids[i_ent], X[i_ent], y[i_ent], ids[i_pru], X[i_pru], y[i_pru])
 
 
@@ -72,14 +72,14 @@ def calcular_parametros_normalizacion(mediciones_entrenamiento: np.ndarray) -> t
     return media, np.where(desviacion == 0, 1.0, desviacion)
 
 
-def normalizar(mediciones: np.ndarray, media: np.ndarray, desviacion: np.ndarray) -> np.ndarray:
+def normalizar(mediciones: np.ndarray, media: np.ndarray, desviacion: np.ndarray) -> np.ndarray:  # [enunciado] A4: z-score
     """z = (x - media) / desviación, vectorizado sobre todas las filas a la vez."""
     return (mediciones - media) / desviacion
 
 
-def ajustar_transformacion(X_entrenamiento: np.ndarray) -> Transformacion:
-    """Aprende los parámetros SOLO del entrenamiento.
-
+def ajustar_transformacion(X_entrenamiento: np.ndarray) -> Transformacion:  # [enunciado] A4: aprender solo del entrenamiento
+    
+    """
     La media y la desviación se calculan después de imputar, porque la normalización
     se aplica a los datos ya imputados.
     """
@@ -88,7 +88,7 @@ def ajustar_transformacion(X_entrenamiento: np.ndarray) -> Transformacion:
     return Transformacion(medianas, media, desviacion)
 
 
-def transformar(mediciones: np.ndarray, transformacion: Transformacion) -> np.ndarray:
+def transformar(mediciones: np.ndarray, transformacion: Transformacion) -> np.ndarray:  # [enunciado] A4: igual en la prueba
     """Aplica exactamente la misma transformación a cualquier conjunto (entrenamiento, prueba o nuevo)."""
     imputadas = imputar(mediciones, transformacion.medianas)
     return normalizar(imputadas, transformacion.media, transformacion.desviacion)
